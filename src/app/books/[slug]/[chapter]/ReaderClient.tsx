@@ -258,7 +258,7 @@ export default function ReaderClient({
     } finally {
       loadingRef.current = false
     }
-  }, [allChapters, sessionId])
+  }, [allChapters, reader?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 페이지뷰 모드: 마운트 즉시 다음 챕터 백그라운드 프리로드
   useEffect(() => {
