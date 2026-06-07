@@ -49,8 +49,14 @@ export default function AuthModal({ onSuccess, onClose }: Props) {
       password: normalizedEmail,
     })
 
-    if (signUpErr || !signUpData.user) {
-      setError('가입에 실패했습니다. 잠시 후 다시 시도해주세요.')
+    if (signUpErr) {
+      setError(`[Auth 오류] ${signUpErr.message}`)
+      setLoading(false)
+      return
+    }
+
+    if (!signUpData.user) {
+      setError('[Auth 오류] 사용자 정보를 가져오지 못했습니다.')
       setLoading(false)
       return
     }
@@ -63,7 +69,8 @@ export default function AuthModal({ onSuccess, onClose }: Props) {
     })
 
     if (!res.ok) {
-      setError('계정 생성에 실패했습니다. 잠시 후 다시 시도해주세요.')
+      const resData = await res.json()
+      setError(`[DB 오류] ${resData.error ?? '알 수 없는 오류'}`)
       setLoading(false)
       return
     }
