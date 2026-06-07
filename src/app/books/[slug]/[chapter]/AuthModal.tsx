@@ -66,13 +66,14 @@ export default function AuthModal({ onSuccess, onClose }: Props) {
       return
     }
 
-    const { error: readerErr } = await supabase.from('readers').insert({
-      id: data.user.id,
-      nickname: nickname.trim(),
-      email: normalizedEmail,
+    // service role API로 readers 저장 (signUp 직후 RLS 세션 적용 전 우회)
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: data.user.id, nickname: nickname.trim(), email: normalizedEmail }),
     })
 
-    if (readerErr) {
+    if (!res.ok) {
       setError('계정 생성에 실패했습니다. 잠시 후 다시 시도해주세요.')
       setLoading(false)
       return
