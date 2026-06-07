@@ -39,7 +39,7 @@ export default function AuthModal({ onSuccess, onClose }: Props) {
         .select('nickname')
         .eq('id', data.user.id)
         .single()
-      onSuccess(data.user.id, reader?.nickname ?? nickname.trim() || '독자')
+      onSuccess(data.user.id, reader?.nickname ?? (nickname.trim() || '독자'))
       return
     }
 
