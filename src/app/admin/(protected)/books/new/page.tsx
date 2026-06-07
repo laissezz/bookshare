@@ -109,7 +109,7 @@ export default function NewBookPage() {
             대시보드로
           </button>
           <button
-            onClick={() => { setStep('idle'); setResult(null); setForm({ title: '', subtitle: '', author: '', slug: '', description: '' }); setDocxFile(null) }}
+            onClick={() => { setStep('idle'); setResult(null); setForm({ title: '', subtitle: '', author: '', slug: '', description: '', board_name: '' }); setDocxFile(null) }}
             className="border border-gray-300 text-gray-700 px-5 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors"
           >
             다른 책 등록
