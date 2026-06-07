@@ -429,57 +429,111 @@ export default function ReaderClient({
 
       {/* 헤더 */}
       <header
-        className="z-10 border-b px-4 h-12 flex items-center justify-between shrink-0"
-        style={{ backgroundColor: theme.bg, borderColor: settings.theme === 'dark' ? '#333' : '#f3f4f6' }}
+        className="z-10 border-b px-3 h-12 flex items-center justify-between shrink-0"
+        style={{ backgroundColor: theme.bg, borderColor: settings.theme === 'dark' ? '#333' : '#f0f0f0' }}
       >
+        {/* 왼쪽: 뒤로가기 */}
         <Link
           href={`/books/${book.slug}`}
-          className="text-sm truncate max-w-[35%] opacity-60 hover:opacity-100 transition-opacity"
+          className="flex items-center justify-center w-8 h-8 rounded-lg transition-opacity opacity-40 hover:opacity-80"
           style={{ color: theme.text }}
+          title="책 소개로"
         >
-          {book.title}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
         </Link>
 
-        <div className="flex items-center gap-3 relative">
-          {/* 로그인 상태 표시 */}
+        {/* 오른쪽: 기능 버튼들 */}
+        <div className="flex items-center gap-1 relative">
+          {/* 로그인 / 닉네임 */}
           {reader ? (
-            <span className="text-xs opacity-50" style={{ color: theme.text }}>
+            <span
+              className="text-xs px-2.5 py-1 rounded-lg opacity-40 select-none"
+              style={{ color: theme.text }}
+              title={reader.nickname}
+            >
               {reader.nickname}
             </span>
           ) : (
             <button
               onClick={() => setShowAuthModal(true)}
-              className="text-xs px-2.5 py-1 rounded-full border border-amber-300 text-amber-600 hover:bg-amber-50 transition-colors"
+              className="text-xs px-2.5 py-1 rounded-lg border transition-colors opacity-70 hover:opacity-100"
+              style={{ borderColor: 'oklch(0.72 0.16 80)', color: 'oklch(0.58 0.16 80)' }}
+              title="로그인"
             >
               로그인
             </button>
           )}
+
+          {/* 전체/나만 토글 */}
           <button
             onClick={() => setShowAll(v => !v)}
-            className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-              showAll
-                ? 'bg-amber-400 border-amber-400 text-white'
-                : 'border-gray-200 opacity-60 hover:opacity-100'
-            }`}
-            style={{ color: showAll ? 'white' : theme.text }}
-            title={showAll ? '내 하이라이트만 보기' : '모든 하이라이트 보기'}
+            className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors"
+            style={{
+              color: showAll ? 'oklch(0.58 0.16 80)' : theme.text,
+              opacity: showAll ? 1 : 0.4,
+              background: showAll ? 'oklch(0.96 0.04 80)' : 'transparent',
+            }}
+            title={showAll ? '내 하이라이트만 보기' : '전체 하이라이트 보기'}
           >
-            👥 {showAll ? '전체' : '나만'}
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.87"/>
+            </svg>
           </button>
+
+          {/* 내 기록 */}
           <Link
             href={`/books/${book.slug}/mine`}
-            className="text-sm opacity-60 hover:opacity-100 transition-opacity"
-            style={{ color: theme.text }} title="내 기록 보기"
-          >📌</Link>
-          <button onClick={() => setSearchOpen(true)}
-            className="text-sm opacity-60 hover:opacity-100 transition-opacity"
-            style={{ color: theme.text }} aria-label="검색">🔍</button>
-          <button onClick={() => setTocOpen(v => !v)}
-            className="text-sm opacity-60 hover:opacity-100 transition-opacity"
-            style={{ color: theme.text }}>목차 ▾</button>
-          <button onClick={() => setSettingsOpen(v => !v)}
-            className="text-sm opacity-60 hover:opacity-100 transition-opacity"
-            style={{ color: theme.text }} aria-label="읽기 설정">⚙</button>
+            className="flex items-center justify-center w-8 h-8 rounded-lg transition-opacity opacity-40 hover:opacity-80"
+            style={{ color: theme.text }}
+            title="내 기록"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+          </Link>
+
+          {/* 검색 */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="flex items-center justify-center w-8 h-8 rounded-lg transition-opacity opacity-40 hover:opacity-80"
+            style={{ color: theme.text }}
+            aria-label="검색"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+          </button>
+
+          {/* 목차 */}
+          <button
+            onClick={() => setTocOpen(v => !v)}
+            className="flex items-center justify-center w-8 h-8 rounded-lg transition-opacity opacity-40 hover:opacity-80"
+            style={{ color: theme.text }}
+            aria-label="목차"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+          </button>
+
+          {/* 설정 */}
+          <button
+            onClick={() => setSettingsOpen(v => !v)}
+            className="flex items-center justify-center w-8 h-8 rounded-lg transition-opacity opacity-40 hover:opacity-80"
+            style={{ color: theme.text }}
+            aria-label="읽기 설정"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+              <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+            </svg>
+          </button>
+
           {settingsOpen && (
             <SettingsPanel settings={settings} onChange={setSettings} onClose={() => setSettingsOpen(false)} />
           )}
