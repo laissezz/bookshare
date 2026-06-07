@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { getSessionId } from '@/lib/session'
 
 interface Chapter {
   id: string
@@ -39,18 +38,19 @@ export default function MineClient({ book, chapters }: { book: Book; chapters: C
   const [highlights, setHighlights] = useState<HighlightItem[]>([])
   const [comments, setComments] = useState<CommentItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [notLoggedIn, setNotLoggedIn] = useState(false)
   const [tab, setTab] = useState<'highlights' | 'comments'>('highlights')
 
   const supabase = createClient()
-  const sessionId = getSessionId()
-
   const chapterMap = Object.fromEntries(chapters.map(c => [c.id, c]))
 
   useEffect(() => {
-    if (!sessionId) { setLoading(false); return }
-
     async function load() {
       setLoading(true)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setLoading(false); setNotLoggedIn(true); return }
+
+      const sessionId = user.id
 
       // 내 하이라이트
       const { data: hl } = await supabase
@@ -101,7 +101,7 @@ export default function MineClient({ book, chapters }: { book: Book; chapters: C
     }
 
     load()
-  }, [book.id, sessionId])
+  }, [book.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="min-h-screen bg-white">
@@ -113,8 +113,20 @@ export default function MineClient({ book, chapters }: { book: Book; chapters: C
       </header>
 
       <main className="max-w-2xl mx-auto px-6 py-8">
-        {/* 탭 */}
-        <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1">
+        {notLoggedIn && (
+          <div className="text-center py-20">
+            <p className="text-4xl mb-4">🔐</p>
+            <p className="text-gray-600 font-medium mb-2">로그인이 필요합니다</p>
+            <p className="text-sm text-gray-400 mb-6">책을 읽으면서 문장을 하이라이트하면 여기에 기록됩니다.</p>
+            <Link
+              href={`/books/${book.slug}`}
+              className="inline-block bg-gray-900 text-white text-sm px-6 py-2.5 rounded-xl hover:bg-gray-700 transition-colors"
+            >
+              ← 책으로 돌아가기
+            </Link>
+          </div>
+        )}
+        {!notLoggedIn && <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1">
           <button
             onClick={() => setTab('highlights')}
             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
@@ -177,6 +189,7 @@ export default function MineClient({ book, chapters }: { book: Book; chapters: C
             </div>
           )
         )}
+        </div>}
       </main>
     </div>
   )

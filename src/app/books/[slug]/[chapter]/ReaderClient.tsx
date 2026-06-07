@@ -11,6 +11,7 @@ import SearchModal from './SearchModal'
 import { loadSettings, THEMES, WIDTH_MAP, type ReaderSettings } from '@/lib/readerSettings'
 import PageView from './PageView'
 import WelcomeModal from './WelcomeModal'
+import AuthModal from './AuthModal'
 
 interface Sentence {
   id: string
@@ -106,6 +107,9 @@ export default function ReaderClient({
   const [searchOpen, setSearchOpen] = useState(false)
   const [popup, setPopup] = useState<PopupState | null>(null)
   const [resumeToast, setResumeToast] = useState(false)
+  const [reader, setReader] = useState<{ id: string; nickname: string } | null>(null)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [pendingSentenceId, setPendingSentenceId] = useState<string | null>(null)
   const [settings, setSettings] = useState<ReaderSettings>(loadSettings)
   const resumeSentenceId = useRef<string | null>(null)
 
@@ -120,7 +124,19 @@ export default function ReaderClient({
 
   const router = useRouter()
   const supabase = createClient()
-  const sessionId = getSessionId()
+
+  // 로그인 상태 확인
+  useEffect(() => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      const { data: r } = await supabase
+        .from('readers')
+        .select('nickname')
+        .eq('id', user.id)
+        .single()
+      setReader({ id: user.id, nickname: r?.nickname ?? '독자' })
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 페이지 뷰 모드일 때 브라우저 스크롤 차단
   useEffect(() => {
@@ -137,19 +153,20 @@ export default function ReaderClient({
     }
   }, [settings.viewMode])
 
-  // 내 하이라이트 초기 로드
+  // 내 하이라이트 초기 로드 (로그인 상태일 때만)
   useEffect(() => {
+    if (!reader) return
     const sentenceIds = sentences.map(s => s.id)
     if (!sentenceIds.length) return
     supabase
       .from('highlights')
       .select('sentence_id')
-      .eq('session_id', sessionId)
+      .eq('session_id', reader.id)
       .in('sentence_id', sentenceIds)
       .then(({ data }) => {
         if (data) setMyHighlights(new Set(data.map(h => h.sentence_id)))
       })
-  }, [chapter.id])
+  }, [chapter.id, reader?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 이어읽기 저장
   useEffect(() => {
@@ -253,6 +270,12 @@ export default function ReaderClient({
   }, [settings.viewMode]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSentenceClick = useCallback((sentence: Sentence, e: React.MouseEvent) => {
+    // 로그인 안 된 경우 → 가입 모달
+    if (!reader) {
+      setPendingSentenceId(sentence.id)
+      setShowAuthModal(true)
+      return
+    }
     const isHighlighted = myHighlights.has(sentence.id)
     const x = e.clientX
     const y = e.clientY
@@ -263,9 +286,10 @@ export default function ReaderClient({
       toggleHighlight(sentence.id)
       setPopup({ sentenceId: sentence.id, content: sentence.content, x, y })
     }
-  }, [myHighlights, highlightCounts, showAll])
+  }, [myHighlights, highlightCounts, showAll, reader])
 
   const toggleHighlight = useCallback(async (sentenceId: string) => {
+    if (!reader) return
     const isHighlighted = myHighlights.has(sentenceId)
     setMyHighlights(prev => {
       const next = new Set(prev)
@@ -278,13 +302,13 @@ export default function ReaderClient({
     }))
     if (isHighlighted) {
       await supabase.from('highlights').delete()
-        .eq('sentence_id', sentenceId).eq('session_id', sessionId)
+        .eq('sentence_id', sentenceId).eq('session_id', reader.id)
     } else {
       await supabase.from('highlights').insert({
-        sentence_id: sentenceId, book_id: book.id, session_id: sessionId,
+        sentence_id: sentenceId, book_id: book.id, session_id: reader.id,
       })
     }
-  }, [myHighlights, book.id, sessionId])
+  }, [myHighlights, book.id, reader])
 
   // 한 챕터의 문장을 렌더링
   function renderSentencesFor(sents: Sentence[]) {
@@ -417,6 +441,19 @@ export default function ReaderClient({
         </Link>
 
         <div className="flex items-center gap-3 relative">
+          {/* 로그인 상태 표시 */}
+          {reader ? (
+            <span className="text-xs opacity-50" style={{ color: theme.text }}>
+              {reader.nickname}
+            </span>
+          ) : (
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="text-xs px-2.5 py-1 rounded-full border border-amber-300 text-amber-600 hover:bg-amber-50 transition-colors"
+            >
+              로그인
+            </button>
+          )}
           <button
             onClick={() => setShowAll(v => !v)}
             className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
@@ -521,6 +558,20 @@ export default function ReaderClient({
           onClose={() => setPopup(null)}
           onRemoveHighlight={() => toggleHighlight(popup.sentenceId)}
           mouseX={popup.x} mouseY={popup.y}
+        />
+      )}
+
+      {showAuthModal && (
+        <AuthModal
+          onSuccess={(userId, nickname) => {
+            setReader({ id: userId, nickname })
+            setShowAuthModal(false)
+            if (pendingSentenceId) {
+              toggleHighlight(pendingSentenceId)
+              setPendingSentenceId(null)
+            }
+          }}
+          onClose={() => { setShowAuthModal(false); setPendingSentenceId(null) }}
         />
       )}
 

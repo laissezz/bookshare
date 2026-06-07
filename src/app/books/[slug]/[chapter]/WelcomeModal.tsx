@@ -44,19 +44,19 @@ export default function WelcomeModal() {
           <div className="flex gap-3">
             <span className="text-xl shrink-0">✨</span>
             <div>
-              <p className="text-sm font-semibold text-gray-800">로그인 없이 사용</p>
+              <p className="text-sm font-semibold text-gray-800">간편 가입</p>
               <p className="text-sm text-gray-500 leading-relaxed">
-                이 서비스는 회원가입이 필요 없습니다. 브라우저에 자동 저장된 익명 ID로 활동이 기록됩니다.
+                닉네임과 이메일만 입력하면 됩니다. 비밀번호 없이 이메일로 언제든 다시 로그인할 수 있어요.
               </p>
             </div>
           </div>
 
           <div className="flex gap-3">
-            <span className="text-xl shrink-0">⚠️</span>
+            <span className="text-xl shrink-0">📱</span>
             <div>
-              <p className="text-sm font-semibold text-amber-700">단, 기록이 사라질 수 있어요</p>
+              <p className="text-sm font-semibold text-gray-800">어디서든 내 기록</p>
               <p className="text-sm text-gray-500 leading-relaxed">
-                브라우저 데이터를 삭제하거나, 다른 기기·브라우저를 사용하면 하이라이트 등 기록이 연결되지 않습니다.
+                같은 이메일로 로그인하면 모바일·PC 어느 기기에서든 내 하이라이트가 그대로 유지됩니다.
               </p>
             </div>
           </div>
