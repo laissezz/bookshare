@@ -242,12 +242,12 @@ export default function ReaderClient({
         newCounts[h.sentence_id] = (newCounts[h.sentence_id] ?? 0) + 1
       }
 
-      // 내 하이라이트 가져오기
-      const { data: myHlData } = await supabase
+      // 내 하이라이트 가져오기 (로그인 상태일 때만)
+      const { data: myHlData } = reader ? await supabase
         .from('highlights')
         .select('sentence_id')
-        .eq('session_id', sessionId)
-        .in('sentence_id', ids)
+        .eq('session_id', reader.id)
+        .in('sentence_id', ids) : { data: [] }
       const myNew = new Set((myHlData ?? []).map(h => h.sentence_id))
 
       // 상태 업데이트
