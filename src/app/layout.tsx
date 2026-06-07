@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Lora } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+});
+
+// 제목·표지용 세리프 서체 — 한국어 산세리프와 대비를 이루며 책다운 분위기 연출
+const lora = Lora({
+  variable: "--font-lora",
+  subsets: ["latin"],
+  weight: ["400", "600"],
 });
 
 export const metadata: Metadata = {
@@ -18,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${geistSans.variable} h-full antialiased`}>
+    <html lang="ko" className={`${geistSans.variable} ${lora.variable} h-full antialiased`}>
       {/*
         React 하이드레이션 전에 테마 배경색을 즉시 적용.
         독자 설정(reader_settings)에서 theme을 읽어 body 배경을 세팅.

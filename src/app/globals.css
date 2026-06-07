@@ -1,22 +1,62 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────────────────────────────
+   색상 토큰 — OKLCH 기반 틴티드 뉴트럴
+   브랜드 색조(amber, hue ≈ 80)를 극미량 섞어 따뜻함은 살리되
+   "AI 기본 크림 배경" 느낌은 피함
+───────────────────────────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
+  /* 배경 */
+  --bg:          oklch(0.99 0.004 80);   /* 거의 흰색, 미묘한 따뜻함 */
+  --bg-subtle:   oklch(0.96 0.006 80);   /* 섹션 구분용 */
+  --bg-muted:    oklch(0.93 0.008 80);   /* 입력창 배경 등 */
+
+  /* 텍스트 */
+  --text:        oklch(0.18 0.01  80);   /* 본문 — 순수 검정보다 따뜻한 짙은 갈색 */
+  --text-2:      oklch(0.45 0.012 80);   /* 부제목·캡션 */
+  --text-3:      oklch(0.62 0.010 80);   /* 힌트·placeholder */
+
+  /* 테두리 */
+  --border:      oklch(0.88 0.008 80);
+  --border-2:    oklch(0.82 0.010 80);
+
+  /* 브랜드 — 앰버 계열 */
+  --brand:       oklch(0.72 0.16  80);   /* 주요 액센트 */
+  --brand-dark:  oklch(0.58 0.16  80);   /* hover */
+  --brand-bg:    oklch(0.96 0.04  80);   /* 브랜드 연한 배경 */
+
+  /* UI */
+  --ink:         oklch(0.18 0.01  80);   /* 주요 버튼 배경 */
+  --ink-hover:   oklch(0.28 0.01  80);
+
+  /* 서체 */
+  --font-sans:   var(--font-geist-sans), 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  --font-serif:  var(--font-lora), 'Georgia', serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-}
-
+/* ── 기본 스타일 ─────────────────────────────────────────────────── */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
 }
 
-/* 본문 내 테이블 스타일 */
+/* 제목에 세리프 + text-wrap: balance 자동 적용 */
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+/* 긴 본문 orphan 방지 */
+p {
+  text-wrap: pretty;
+}
+
+/* ── 독자용 세리프 폰트 유틸 ─────────────────────────────────────── */
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* ── 본문 테이블 ──────────────────────────────────────────────────── */
 .reader-content table {
   width: 100%;
   border-collapse: collapse;
@@ -25,19 +65,20 @@ body {
 }
 .reader-content table th,
 .reader-content table td {
-  border: 1px solid rgba(128,128,128,0.25);
+  border: 1px solid var(--border);
   padding: 0.5rem 0.75rem;
   text-align: left;
   vertical-align: top;
 }
 .reader-content table th {
-  background: rgba(128,128,128,0.15);
+  background: var(--bg-subtle);
   font-weight: 600;
 }
 .reader-content table tr:nth-child(even) td {
-  background: rgba(128,128,128,0.08);
+  background: var(--bg-muted);
 }
-/* 본문 내 리스트 스타일 */
+
+/* ── 본문 리스트 ──────────────────────────────────────────────────── */
 .reader-content ul {
   list-style-type: disc;
   padding-left: 1.5rem;
@@ -52,7 +93,8 @@ body {
   margin: 0.4rem 0;
   line-height: 1.7;
 }
-/* 본문 내 이미지 스타일 */
+
+/* ── 본문 이미지 ──────────────────────────────────────────────────── */
 .reader-content img {
   max-width: 100%;
   height: auto;

@@ -23,25 +23,31 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
     .eq('book_id', book.id)
     .order('order_index')
 
-  // 글자 수가 충분한 첫 챕터로 시작 (300자 미만은 TOC·제목 페이지로 간주)
   const firstChapter = chapters?.find(c => (c.char_count ?? 0) >= 300) ?? chapters?.[0]
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-100 px-6 py-4">
-        <Link href="/" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
+      <header style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)' }} className="px-6 py-4">
+        <Link href="/" className="text-sm transition-colors" style={{ color: 'var(--text-3)' }}>
           ← 홈으로
         </Link>
       </header>
 
       <main className="max-w-2xl mx-auto px-6 py-12">
-        {/* 표지 */}
-        <div className="flex justify-center mb-8">
-          <div className="w-full aspect-[3/4] bg-gray-100 rounded-xl overflow-hidden relative shadow-lg">
+        {/* 표지 — 그림자만, 테두리 없음 */}
+        <div className="flex justify-center mb-10">
+          <div
+            className="w-full aspect-[3/4] rounded-2xl overflow-hidden relative"
+            style={{
+              maxWidth: '280px',
+              boxShadow: '0 6px 32px oklch(0.18 0.01 80 / 0.18)',
+              background: 'var(--bg-muted)',
+            }}
+          >
             {book.cover_url ? (
               <Image src={book.cover_url} alt={book.title} fill className="object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-50 to-amber-100">
+              <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--brand-bg)' }}>
                 <span className="text-5xl">📖</span>
               </div>
             )}
@@ -50,13 +56,20 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
 
         {/* 책 정보 */}
         <div className="text-center mb-10">
-          <h1 className="text-2xl font-semibold text-gray-900 leading-snug">{book.title}</h1>
+          <h1
+            className="text-2xl font-semibold leading-snug mb-1"
+            style={{ color: 'var(--text)', fontFamily: 'var(--font-serif)' }}
+          >
+            {book.title}
+          </h1>
           {book.subtitle && (
-            <p className="text-gray-500 mt-1">{book.subtitle}</p>
+            <p className="text-base mt-1" style={{ color: 'var(--text-2)' }}>{book.subtitle}</p>
           )}
-          <p className="text-sm text-gray-400 mt-2">{book.author}</p>
+          <p className="text-sm mt-2" style={{ color: 'var(--text-3)' }}>{book.author}</p>
           {book.description && (
-            <p className="text-gray-600 text-sm mt-4 leading-relaxed max-w-md mx-auto">{book.description}</p>
+            <p className="text-sm mt-5 leading-relaxed max-w-md mx-auto" style={{ color: 'var(--text-2)' }}>
+              {book.description}
+            </p>
           )}
         </div>
 
@@ -64,9 +77,10 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
         {firstChapter && (
           <Link
             href={`/books/${slug}/${firstChapter.slug}`}
-            className="block w-full text-center bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-gray-700 transition-colors mb-3"
+            className="block w-full text-center py-3 rounded-xl font-medium text-sm transition-colors mb-3"
+            style={{ background: 'var(--ink)', color: 'white' }}
           >
-            읽기 시작
+            읽기 시작하기
           </Link>
         )}
 
@@ -74,33 +88,36 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
         {book.board_name && (
           <Link
             href={`/books/${slug}/reviews`}
-            className="block w-full text-center text-sm text-gray-600 hover:text-gray-900 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors mb-3"
+            className="block w-full text-center text-sm py-3 rounded-xl transition-colors mb-3"
+            style={{ border: '1px solid var(--border-2)', color: 'var(--text-2)', background: 'transparent' }}
           >
             ✏️ {book.board_name}
           </Link>
         )}
 
-        {/* 인기 문장 / 내 기록 버튼 */}
-        <div className="flex gap-3 mb-10">
+        {/* 보조 링크 */}
+        <div className="flex gap-3 mb-12">
           <Link
             href={`/books/${slug}/highlights`}
-            className="flex-1 text-center text-sm text-amber-600 hover:text-amber-700 py-3 border border-amber-200 rounded-xl hover:bg-amber-50 transition-colors"
+            className="flex-1 text-center text-sm py-3 rounded-xl transition-colors"
+            style={{ border: '1px solid var(--brand-bg)', color: 'var(--brand-dark)', background: 'var(--brand-bg)' }}
           >
-            💛 인기 문장 보기
+            💛 인기 문장
           </Link>
           <Link
             href={`/books/${slug}/mine`}
-            className="flex-1 text-center text-sm text-gray-600 hover:text-gray-900 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+            className="flex-1 text-center text-sm py-3 rounded-xl transition-colors"
+            style={{ border: '1px solid var(--border)', color: 'var(--text-2)', background: 'transparent' }}
           >
-            📌 내 기록 보기
+            📌 내 기록
           </Link>
         </div>
 
-        {/* 목차 */}
+        {/* 목차 — 대문자 아이브로우 제거, 자연스러운 섹션 제목으로 */}
         {chapters && chapters.length > 0 && (
           <div>
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">목차</h2>
-            <div className="space-y-0">
+            <p className="text-sm font-medium mb-4" style={{ color: 'var(--text-3)' }}>목차</p>
+            <div>
               {chapters.filter(c => (c.level ?? 1) === 1 || (c.char_count ?? 0) >= 100).map((chapter) => {
                 const minutes = chapter.char_count
                   ? Math.max(1, Math.round(chapter.char_count / 500))
@@ -108,38 +125,39 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
                 const isSection = (chapter.level ?? 1) > 1
 
                 if (!isSection) {
-                  // 장: 굵고 크게, 구분선
                   return (
                     <div key={chapter.id}>
                       <Link
                         href={`/books/${slug}/${chapter.slug}`}
                         className="flex items-center justify-between py-3 mt-4 first:mt-0 group"
                       >
-                        <span className="font-semibold text-gray-900 group-hover:text-amber-700 transition-colors">
+                        <span
+                          className="font-semibold transition-colors duration-200"
+                          style={{ color: 'var(--text)', fontFamily: 'var(--font-serif)' }}
+                        >
                           {chapter.title}
                         </span>
-                        {/* 장은 직접 본문이 있을 때만 읽기 시간 표시 */}
                         {minutes && (chapter.char_count ?? 0) >= 100 && (
-                          <span className="text-xs text-gray-300">약 {minutes}분</span>
+                          <span className="text-xs tabular-nums" style={{ color: 'var(--text-3)' }}>약 {minutes}분</span>
                         )}
                       </Link>
-                      <div className="w-full border-t border-gray-200" />
+                      <div style={{ borderTop: '1px solid var(--border)' }} />
                     </div>
                   )
                 }
 
-                // 절: 들여쓰기, 작은 글씨
                 return (
                   <Link
                     key={chapter.id}
                     href={`/books/${slug}/${chapter.slug}`}
-                    className="flex items-center justify-between py-2.5 pl-4 border-b border-gray-50 group"
+                    className="flex items-center justify-between py-2.5 pl-4 group"
+                    style={{ borderBottom: '1px solid var(--bg-subtle)' }}
                   >
-                    <span className="text-sm text-gray-600 group-hover:text-amber-700 transition-colors">
+                    <span className="text-sm transition-colors duration-200" style={{ color: 'var(--text-2)' }}>
                       {chapter.title}
                     </span>
                     {minutes && (
-                      <span className="text-xs text-gray-300">약 {minutes}분</span>
+                      <span className="text-xs tabular-nums" style={{ color: 'var(--text-3)' }}>약 {minutes}분</span>
                     )}
                   </Link>
                 )
