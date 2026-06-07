@@ -27,7 +27,8 @@ export default function WelcomeModal() {
       onClick={close}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col"
+        style={{ maxHeight: '90vh' }}
         onClick={e => e.stopPropagation()}
       >
         {/* 헤더 */}
@@ -38,7 +39,7 @@ export default function WelcomeModal() {
         </div>
 
         {/* 기능 목록 */}
-        <div className="px-6 py-4 space-y-4">
+        <div className="px-6 py-4 space-y-4 overflow-y-auto flex-1">
 
           <div className="flex gap-3">
             <span className="text-xl shrink-0">✨</span>
