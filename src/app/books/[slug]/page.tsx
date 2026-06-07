@@ -64,14 +64,24 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
         {firstChapter && (
           <Link
             href={`/books/${slug}/${firstChapter.slug}`}
-            className="block w-full text-center bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-gray-700 transition-colors mb-10"
+            className="block w-full text-center bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-gray-700 transition-colors mb-3"
           >
             읽기 시작
           </Link>
         )}
 
-        {/* 링크 버튼 */}
-        <div className="flex gap-3 mb-4">
+        {/* 게시판 버튼 */}
+        {book.board_name && (
+          <Link
+            href={`/books/${slug}/reviews`}
+            className="block w-full text-center text-sm text-gray-600 hover:text-gray-900 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors mb-3"
+          >
+            ✏️ {book.board_name}
+          </Link>
+        )}
+
+        {/* 인기 문장 / 내 기록 버튼 */}
+        <div className="flex gap-3 mb-10">
           <Link
             href={`/books/${slug}/highlights`}
             className="flex-1 text-center text-sm text-amber-600 hover:text-amber-700 py-3 border border-amber-200 rounded-xl hover:bg-amber-50 transition-colors"
@@ -85,12 +95,6 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
             📌 내 기록 보기
           </Link>
         </div>
-        <Link
-          href={`/books/${slug}/reviews`}
-          className="block w-full text-center text-sm text-gray-600 hover:text-gray-900 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors mb-8"
-        >
-          ✏️ 독서 후기 보기 · 남기기
-        </Link>
 
         {/* 목차 */}
         {chapters && chapters.length > 0 && (

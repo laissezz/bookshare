@@ -11,6 +11,7 @@ export default function NewBookPage() {
     author: '',
     slug: '',
     description: '',
+    board_name: '',
   })
   const [docxFile, setDocxFile] = useState<File | null>(null)
   const [coverFile, setCoverFile] = useState<File | null>(null)
@@ -153,6 +154,12 @@ export default function NewBookPage() {
             placeholder="책 소개를 입력하세요"
             rows={3}
             className={inputClass + ' resize-none'} />
+        </Field>
+
+        <Field label="게시판 이름" hint="책 소개 페이지의 후기 게시판 버튼 이름. 예: 독자 후기, 한마디 남기기">
+          <input name="board_name" value={form.board_name} onChange={handleField}
+            placeholder="독서 후기"
+            className={inputClass} />
         </Field>
 
         <Field label="표지 이미지" hint="JPG, PNG, WebP">

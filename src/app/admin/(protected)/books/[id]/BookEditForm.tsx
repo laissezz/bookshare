@@ -10,6 +10,7 @@ interface Book {
   author: string
   slug: string
   description: string | null
+  board_name: string | null
   published: boolean
 }
 
@@ -20,6 +21,7 @@ export default function BookEditForm({ book }: { book: Book }) {
     subtitle: book.subtitle ?? '',
     author: book.author,
     description: book.description ?? '',
+    board_name: book.board_name ?? '',
     published: book.published,
   })
   const [saving, setSaving] = useState(false)
@@ -62,6 +64,11 @@ export default function BookEditForm({ book }: { book: Book }) {
       <div>
         <label className="block text-xs text-gray-500 mb-1">소개글</label>
         <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} className={inputClass + ' resize-none'} />
+      </div>
+      <div>
+        <label className="block text-xs text-gray-500 mb-1">게시판 이름</label>
+        <input value={form.board_name} onChange={e => setForm(f => ({ ...f, board_name: e.target.value }))} placeholder="예: 독자 후기, 한마디 남기기" className={inputClass} />
+        <p className="text-xs text-gray-300 mt-1">책 소개 페이지의 후기 게시판 버튼 이름으로 표시됩니다.</p>
       </div>
       <div className="flex items-center gap-2">
         <input

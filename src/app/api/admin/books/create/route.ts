@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { title, subtitle, author, slug, description, cover_url } = await req.json()
+  const { title, subtitle, author, slug, description, cover_url, board_name } = await req.json()
   if (!title || !author || !slug) {
     return NextResponse.json({ error: '필수 값 누락' }, { status: 400 })
   }
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('books')
-    .insert({ title, subtitle: subtitle || null, author, slug, description: description || null, cover_url, published: false })
+    .insert({ title, subtitle: subtitle || null, author, slug, description: description || null, cover_url, board_name: board_name || null, published: false })
     .select('id')
     .single()
 
