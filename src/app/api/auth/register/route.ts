@@ -9,12 +9,12 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
-  // service role로 RLS 우회하여 readers 테이블에 저장
-  const { error } = await admin.from('readers').insert({
+  // service role로 RLS 우회하여 readers 테이블에 저장 (upsert로 중복 방지)
+  const { error } = await admin.from('readers').upsert({
     id: userId,
     nickname: nickname.trim(),
     email: email.toLowerCase(),
-  })
+  }, { onConflict: 'id' })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })
