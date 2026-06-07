@@ -28,6 +28,7 @@ export default function AdminNav() {
           <span className="font-semibold text-gray-900 mr-4">관리자</span>
           <Link href="/admin" className={linkClass('/admin')}>대시보드</Link>
           <Link href="/admin/books" className={linkClass('/admin/books')}>책 관리</Link>
+          <Link href="/admin/readers" className={linkClass('/admin/readers')}>독자 관리</Link>
         </div>
         <button
           onClick={handleLogout}

@@ -66,7 +66,7 @@ export default function WelcomeModal() {
             <div>
               <p className="text-sm font-semibold text-gray-800">문장 하이라이트</p>
               <p className="text-sm text-gray-500 leading-relaxed">
-                마음에 드는 문장을 클릭하면 하이라이트됩니다. 다른 독자들이 많이 표시한 문장도 볼 수 있어요.
+                마음에 드는 문장을 클릭하면 하이라이트됩니다. 처음 클릭 시 <strong>닉네임·이메일 가입</strong>이 필요하며, 이후 어느 기기에서든 내 기록이 유지됩니다. 다른 독자들이 많이 표시한 문장도 볼 수 있어요.
               </p>
             </div>
           </div>
