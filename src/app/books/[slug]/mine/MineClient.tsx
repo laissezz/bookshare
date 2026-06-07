@@ -126,70 +126,73 @@ export default function MineClient({ book, chapters }: { book: Book; chapters: C
             </Link>
           </div>
         )}
-        {!notLoggedIn && <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1">
-          <button
-            onClick={() => setTab('highlights')}
-            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
-              tab === 'highlights' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            💛 하이라이트 {!loading && `(${highlights.length})`}
-          </button>
-          <button
-            onClick={() => setTab('comments')}
-            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
-              tab === 'comments' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            💬 댓글 {!loading && `(${comments.length})`}
-          </button>
-        </div>
+        {!notLoggedIn && (
+          <>
+            <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1">
+              <button
+                onClick={() => setTab('highlights')}
+                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  tab === 'highlights' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                💛 하이라이트 {!loading && `(${highlights.length})`}
+              </button>
+              <button
+                onClick={() => setTab('comments')}
+                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  tab === 'comments' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                💬 댓글 {!loading && `(${comments.length})`}
+              </button>
+            </div>
 
-        {loading ? (
-          <div className="space-y-4 animate-pulse">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-16 bg-gray-100 rounded-xl" />
-            ))}
-          </div>
-        ) : tab === 'highlights' ? (
-          highlights.length === 0 ? (
-            <EmptyState text="아직 하이라이트한 문장이 없어요" sub="문장을 클릭하면 하이라이트할 수 있어요" />
-          ) : (
-            <div className="space-y-3">
-              {highlights.map(h => (
-                <Link
-                  key={h.sentenceId}
-                  href={`/books/${book.slug}/${h.chapterSlug}#${h.sentenceId}`}
-                  className="block bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 hover:bg-amber-100 transition-colors group"
-                >
-                  <p className="text-gray-900 text-sm leading-relaxed">{h.content}</p>
-                  <p className="text-xs text-gray-400 mt-2">{h.chapterTitle}</p>
-                </Link>
-              ))}
-            </div>
-          )
-        ) : (
-          comments.length === 0 ? (
-            <EmptyState text="아직 남긴 댓글이 없어요" sub="하이라이트 팝업에서 경험을 남겨보세요" />
-          ) : (
-            <div className="space-y-4">
-              {comments.map(c => (
-                <Link
-                  key={c.id}
-                  href={`/books/${book.slug}/${c.chapterSlug}#${c.sentenceId}`}
-                  className="block border border-gray-100 rounded-xl px-4 py-3 hover:bg-gray-50 transition-colors"
-                >
-                  <p className="text-xs text-gray-400 mb-1.5 line-clamp-1">"{c.sentenceContent}"</p>
-                  <p className="text-sm text-gray-800 leading-relaxed">{c.content}</p>
-                  <p className="text-xs text-gray-300 mt-2">
-                    {c.chapterTitle} · {new Date(c.createdAt).toLocaleDateString('ko-KR')}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          )
+            {loading ? (
+              <div className="space-y-4 animate-pulse">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-16 bg-gray-100 rounded-xl" />
+                ))}
+              </div>
+            ) : tab === 'highlights' ? (
+              highlights.length === 0 ? (
+                <EmptyState text="아직 하이라이트한 문장이 없어요" sub="문장을 클릭하면 하이라이트할 수 있어요" />
+              ) : (
+                <div className="space-y-3">
+                  {highlights.map(h => (
+                    <Link
+                      key={h.sentenceId}
+                      href={`/books/${book.slug}/${h.chapterSlug}#${h.sentenceId}`}
+                      className="block bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 hover:bg-amber-100 transition-colors group"
+                    >
+                      <p className="text-gray-900 text-sm leading-relaxed">{h.content}</p>
+                      <p className="text-xs text-gray-400 mt-2">{h.chapterTitle}</p>
+                    </Link>
+                  ))}
+                </div>
+              )
+            ) : (
+              comments.length === 0 ? (
+                <EmptyState text="아직 남긴 댓글이 없어요" sub="하이라이트 팝업에서 경험을 남겨보세요" />
+              ) : (
+                <div className="space-y-4">
+                  {comments.map(c => (
+                    <Link
+                      key={c.id}
+                      href={`/books/${book.slug}/${c.chapterSlug}#${c.sentenceId}`}
+                      className="block border border-gray-100 rounded-xl px-4 py-3 hover:bg-gray-50 transition-colors"
+                    >
+                      <p className="text-xs text-gray-400 mb-1.5 line-clamp-1">"{c.sentenceContent}"</p>
+                      <p className="text-sm text-gray-800 leading-relaxed">{c.content}</p>
+                      <p className="text-xs text-gray-300 mt-2">
+                        {c.chapterTitle} · {new Date(c.createdAt).toLocaleDateString('ko-KR')}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              )
+            )}
+          </>
         )}
-        </div>}
       </main>
     </div>
   )
