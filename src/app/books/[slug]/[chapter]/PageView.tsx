@@ -54,6 +54,8 @@ export default function PageView({
   const outerRef   = useRef<HTMLDivElement>(null) // 표시 영역 (overflow:hidden)
   const contentRef = useRef<HTMLDivElement>(null) // 실제 콘텐츠 (측정 + 표시 겸용)
 
+  const PADDING_TOP = 28 // 헤더와 본문 사이 여백 (px)
+
   const [pageHeight,  setPageHeight]  = useState(0)
   const [pageOffsets, setPageOffsets] = useState<number[]>([0])
   const [currentPage, setCurrentPage] = useState(0)
@@ -69,7 +71,7 @@ export default function PageView({
     function measure() {
       if (!outerRef.current) return
       const h = outerRef.current.clientHeight
-      if (h > 0) setPageHeight(h)
+      if (h > 0) setPageHeight(h - PADDING_TOP)
     }
     measure()
     const ro = new ResizeObserver(measure)
@@ -182,7 +184,7 @@ export default function PageView({
         }}
       >
         {/* contentRef와 동일한 children을 translateY로 이동 */}
-        <div style={{ transform: `translateY(${-offset}px)` }}>
+        <div style={{ paddingTop: `${PADDING_TOP}px`, transform: `translateY(${-offset}px)` }}>
           {children}
         </div>
       </div>
@@ -205,6 +207,7 @@ export default function PageView({
             style={{
               position: 'absolute',
               top: 0, left: 0,
+              paddingTop: `${PADDING_TOP}px`,
               // 2페이지 모드: 절반 너비로 측정 (실제 표시 컬럼과 동일한 너비)
               width: spread === 2 ? '50%' : '100%',
               // 측정 단계: 가시화 안 함 / 표시 단계: 완전히 숨김 (실제 표시는 renderPage가 담당)
