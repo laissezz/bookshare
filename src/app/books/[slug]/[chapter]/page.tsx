@@ -4,6 +4,18 @@ import ReaderClient from './ReaderClient'
 
 export const dynamic = 'force-dynamic'
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string; chapter: string }> }) {
+  const { slug, chapter: chapterSlug } = await params
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+  const { data: book } = await supabase.from('books').select('title').eq('slug', slug).single()
+  const { data: chapter } = await supabase.from('chapters').select('title').eq('slug', chapterSlug).single()
+  if (!book) return {}
+  return {
+    title: chapter ? `${chapter.title} — ${book.title}` : book.title,
+  }
+}
+
 export default async function ChapterPage({
   params,
 }: {

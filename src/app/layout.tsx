@@ -15,8 +15,8 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "딸깍하지 않은 생각들",
-  description: "AI와 함께 일하며 변하는 감각들",
+  title: "책 읽기",
+  description: "온라인 책 읽기 플랫폼",
 };
 
 export default function RootLayout({

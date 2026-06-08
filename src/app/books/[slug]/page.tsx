@@ -5,6 +5,18 @@ import Image from 'next/image'
 
 export const dynamic = 'force-dynamic'
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+  const { data: book } = await supabase.from('books').select('title, author, description').eq('slug', slug).single()
+  if (!book) return {}
+  return {
+    title: book.author ? `${book.title} — ${book.author}` : book.title,
+    description: book.description ?? undefined,
+  }
+}
+
 export default async function BookPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const supabase = await createClient()
