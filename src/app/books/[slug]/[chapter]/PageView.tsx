@@ -24,24 +24,20 @@ interface Props {
 //   2) "display phase": 측정 완료 후 clip + translateY 적용
 // ─────────────────────────────────────────────────────────────────────────────
 
-function getOffsetTop(el: HTMLElement, ancestor: HTMLElement): number {
-  let top = 0
-  let cur: HTMLElement | null = el
-  while (cur && cur !== ancestor) {
-    top += cur.offsetTop
-    cur = cur.offsetParent as HTMLElement | null
-  }
-  return top
-}
-
-/** 단락 단위 페이지 브레이크 오프셋 계산 */
+/** 단락 단위 페이지 브레이크 오프셋 계산
+ *  getBoundingClientRect 기반: DOM 트리 순회 없이 단일 레이아웃 패스로 처리 */
 function calcPageOffsets(container: HTMLElement, pageH: number): number[] {
   const offsets: number[] = [0]
   let pageStart = 0
   const blocks = Array.from(container.querySelectorAll('p, h2, h3')) as HTMLElement[]
+
+  // 컨테이너 기준점을 한 번만 읽음 (이후 각 블록은 getBoundingClientRect 사용)
+  const containerTop = container.getBoundingClientRect().top
+
   for (const block of blocks) {
-    const top = getOffsetTop(block, container)
-    const bot = top + block.offsetHeight
+    const rect = block.getBoundingClientRect()
+    const top = rect.top - containerTop
+    const bot = top + rect.height
     if (bot > pageStart + pageH && top > pageStart + 4) {
       pageStart = top
       offsets.push(pageStart)
@@ -58,7 +54,7 @@ export default function PageView({
   const outerRef   = useRef<HTMLDivElement>(null) // 표시 영역 (overflow:hidden)
   const contentRef = useRef<HTMLDivElement>(null) // 실제 콘텐츠 (측정 + 표시 겸용)
 
-  const PADDING_TOP = 28 // 헤더와 본문 사이 여백 (px)
+  const PADDING_TOP = 52 // 헤더와 본문 사이 여백 (px) — 모바일 가독성 확보
 
   const [pageHeight,  setPageHeight]  = useState(0)
   const [pageOffsets, setPageOffsets] = useState<number[]>([0])
@@ -90,25 +86,44 @@ export default function PageView({
     setCurrentPage(0)
   }, [spread])
 
-  // ── 콘텐츠 측정 (height:auto 상태에서 offsetTop 측정) ─────────────────────
+  // ── 콘텐츠 측정 ────────────────────────────────────────────────────────────
+  // • 초기 렌더: double RAF → 첫 화면을 빠르게 표시
+  // • 추가 챕터 로드: requestIdleCallback → 페이지 넘김 중 메인 스레드 차단 방지
   useEffect(() => {
     if (!pageHeight || !contentRef.current) return
-    // setMeasured(false) 하지 않음 → 기존 화면 유지하며 백그라운드 측정 (플리커 방지)
 
-    const id1 = requestAnimationFrame(() => {
-      const id2 = requestAnimationFrame(() => {
-        if (!contentRef.current) return
-        const offsets = calcPageOffsets(contentRef.current, pageHeight)
-        setPageOffsets(offsets)
-        if (!hasInitRef.current) {
-          setCurrentPage(0)
-          hasInitRef.current = true
-        }
-        setMeasured(true) // 측정 완료 → clip + translateY 적용
+    function doMeasure() {
+      if (!contentRef.current) return
+      const offsets = calcPageOffsets(contentRef.current, pageHeight)
+      setPageOffsets(offsets)
+      if (!hasInitRef.current) {
+        setCurrentPage(0)
+        hasInitRef.current = true
+      }
+      setMeasured(true)
+    }
+
+    const isInitial = !hasInitRef.current
+
+    if (isInitial) {
+      // 초기: 빠른 double RAF로 첫 화면 즉시 표시
+      let id2: number
+      const id1 = requestAnimationFrame(() => {
+        id2 = requestAnimationFrame(doMeasure)
       })
-      return () => cancelAnimationFrame(id2)
-    })
-    return () => cancelAnimationFrame(id1)
+      return () => { cancelAnimationFrame(id1); cancelAnimationFrame(id2) }
+    } else {
+      // 추가 챕터 로드: requestIdleCallback으로 메인 스레드 양보
+      // → 사용자가 페이지를 빠르게 넘겨도 멈춤 없이 백그라운드에서 처리
+      if (typeof requestIdleCallback !== 'undefined') {
+        const handle = requestIdleCallback(doMeasure, { timeout: 800 })
+        return () => cancelIdleCallback(handle)
+      } else {
+        // requestIdleCallback 미지원 환경 폴백 (IE, 구형 Safari)
+        const t = setTimeout(doMeasure, 100)
+        return () => clearTimeout(t)
+      }
+    }
   }, [contentKey, pageHeight, spread])
 
   // ── 프리로드: 마지막 5페이지 이내 or 페이지 수가 적으면 즉시 ────────────────
