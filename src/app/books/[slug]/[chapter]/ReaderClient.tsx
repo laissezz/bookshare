@@ -441,29 +441,28 @@ export default function ReaderClient({
 
       {/* 헤더 — z-50으로 토스트(z-40)보다 위에 위치 */}
       <header
-        className="z-50 border-b px-3 h-12 flex items-center justify-between shrink-0"
+        className="z-50 border-b px-3 h-14 flex items-center justify-between shrink-0"
         style={{ backgroundColor: theme.bg, borderColor: settings.theme === 'dark' ? '#333' : '#f0f0f0' }}
       >
         {/* 왼쪽: 뒤로가기 */}
         <Link
           href={`/books/${book.slug}`}
-          className="flex items-center justify-center w-8 h-8 rounded-lg transition-opacity opacity-40 hover:opacity-80"
+          className="flex flex-col items-center justify-center w-10 h-10 rounded-lg transition-opacity opacity-40 hover:opacity-80 gap-0.5"
           style={{ color: theme.text }}
-          title="책 소개로"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
           </svg>
+          <span style={{ fontSize: '9px', lineHeight: 1 }}>홈</span>
         </Link>
 
         {/* 오른쪽: 기능 버튼들 */}
-        <div className="flex items-center gap-1 relative">
+        <div className="flex items-center gap-0.5 relative">
           {/* 로그인 / 닉네임 */}
           {reader ? (
             <span
-              className="text-xs px-2.5 py-1 rounded-lg opacity-40 select-none"
-              style={{ color: theme.text }}
-              title={reader.nickname}
+              className="text-xs px-2 py-1 rounded-lg opacity-40 select-none"
+              style={{ color: theme.text, fontSize: '11px' }}
             >
               {reader.nickname}
             </span>
@@ -471,8 +470,7 @@ export default function ReaderClient({
             <button
               onClick={() => setShowAuthModal(true)}
               className="text-xs px-2.5 py-1 rounded-lg border transition-colors opacity-70 hover:opacity-100"
-              style={{ borderColor: 'oklch(0.72 0.16 80)', color: 'oklch(0.58 0.16 80)' }}
-              title="로그인"
+              style={{ borderColor: 'oklch(0.72 0.16 80)', color: 'oklch(0.58 0.16 80)', fontSize: '11px' }}
             >
               로그인
             </button>
@@ -481,65 +479,64 @@ export default function ReaderClient({
           {/* 전체/나만 토글 */}
           <button
             onClick={() => setShowAll(v => !v)}
-            className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors"
+            className="flex flex-col items-center justify-center w-10 h-10 rounded-lg transition-colors gap-0.5"
             style={{
               color: showAll ? 'oklch(0.58 0.16 80)' : theme.text,
               opacity: showAll ? 1 : 0.4,
               background: showAll ? 'oklch(0.96 0.04 80)' : 'transparent',
             }}
-            title={showAll ? '내 하이라이트만 보기' : '전체 하이라이트 보기'}
           >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.87"/>
             </svg>
+            <span style={{ fontSize: '9px', lineHeight: 1 }}>{showAll ? '전체' : '나만'}</span>
           </button>
 
           {/* 내 기록 */}
           <Link
             href={`/books/${book.slug}/mine`}
-            className="flex items-center justify-center w-8 h-8 rounded-lg transition-opacity opacity-40 hover:opacity-80"
+            className="flex flex-col items-center justify-center w-10 h-10 rounded-lg transition-opacity opacity-40 hover:opacity-80 gap-0.5"
             style={{ color: theme.text }}
-            title="내 기록"
           >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
             </svg>
+            <span style={{ fontSize: '9px', lineHeight: 1 }}>기록</span>
           </Link>
 
           {/* 검색 */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="flex items-center justify-center w-8 h-8 rounded-lg transition-opacity opacity-40 hover:opacity-80"
+            className="flex flex-col items-center justify-center w-10 h-10 rounded-lg transition-opacity opacity-40 hover:opacity-80 gap-0.5"
             style={{ color: theme.text }}
-            aria-label="검색"
           >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
+            <span style={{ fontSize: '9px', lineHeight: 1 }}>검색</span>
           </button>
 
           {/* 목차 */}
           <button
             onClick={() => setTocOpen(v => !v)}
-            className="flex items-center justify-center w-8 h-8 rounded-lg transition-opacity opacity-40 hover:opacity-80"
+            className="flex flex-col items-center justify-center w-10 h-10 rounded-lg transition-opacity opacity-40 hover:opacity-80 gap-0.5"
             style={{ color: theme.text }}
-            aria-label="목차"
           >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
               <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
             </svg>
+            <span style={{ fontSize: '9px', lineHeight: 1 }}>목차</span>
           </button>
 
-          {/* 설정 — 슬라이더 아이콘으로 직관적으로 표현 */}
+          {/* 설정 */}
           <button
             onClick={() => setSettingsOpen(v => !v)}
-            className="flex items-center justify-center w-8 h-8 rounded-lg transition-opacity opacity-40 hover:opacity-80"
+            className="flex flex-col items-center justify-center w-10 h-10 rounded-lg transition-opacity opacity-40 hover:opacity-80 gap-0.5"
             style={{ color: theme.text }}
-            aria-label="글자·테마 설정"
           >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="4" y1="6" x2="20" y2="6"/>
               <line x1="4" y1="12" x2="20" y2="12"/>
               <line x1="4" y1="18" x2="20" y2="18"/>
@@ -547,6 +544,7 @@ export default function ReaderClient({
               <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/>
               <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
             </svg>
+            <span style={{ fontSize: '9px', lineHeight: 1 }}>설정</span>
           </button>
 
           {settingsOpen && (
@@ -558,7 +556,7 @@ export default function ReaderClient({
       {/* 목차 드롭다운 */}
       {tocOpen && (
         <div className="fixed inset-0 z-20" onClick={() => setTocOpen(false)}>
-          <div className="absolute top-12 right-4 bg-white border border-gray-200 rounded-xl shadow-lg py-2 w-64 max-h-80 overflow-y-auto"
+          <div className="absolute top-14 right-4 bg-white border border-gray-200 rounded-xl shadow-lg py-2 w-64 max-h-80 overflow-y-auto"
             onClick={e => e.stopPropagation()}>
             {allChapters.map(c => {
               const isSection = (c.level ?? 1) > 1
@@ -602,18 +600,44 @@ export default function ReaderClient({
         /* ── 스크롤 뷰: URL 기반 챕터별 이동 ── */
         <main className="mx-auto px-6 py-10" style={{ maxWidth: WIDTH_MAP[settings.contentWidth] }}>
           {renderChapterTitle(chapter, theme.text)}
-          <div className="reader-content" style={fontStyle}>
-            {renderSentencesFor(sentences)}
-          </div>
 
-          <div className="flex justify-between mt-16 pt-8 border-t border-gray-100">
-            {prevChapter
-              ? <Link href={`/books/${book.slug}/${prevChapter.slug}`} className="text-sm text-gray-500 hover:text-gray-900 transition-colors">← {prevChapter.title}</Link>
-              : <div />}
-            {nextChapterMeta
-              ? <Link href={`/books/${book.slug}/${nextChapterMeta.slug}`} className="text-sm text-gray-500 hover:text-gray-900 transition-colors">{nextChapterMeta.title} →</Link>
-              : <div />}
-          </div>
+          {sentences.length === 0 ? (
+            /* 빈 챕터 — 안내 메시지 + 네비게이션 */
+            <div className="flex flex-col items-center justify-center py-24 gap-6">
+              <p className="text-sm opacity-40" style={{ color: theme.text }}>본문이 없는 챕터입니다.</p>
+              <div className="flex gap-4">
+                {prevChapter && (
+                  <Link href={`/books/${book.slug}/${prevChapter.slug}`}
+                    className="text-sm px-4 py-2 rounded-lg border transition-colors"
+                    style={{ color: theme.text, borderColor: theme.text + '33' }}>
+                    ← 이전 챕터
+                  </Link>
+                )}
+                {nextChapterMeta && (
+                  <Link href={`/books/${book.slug}/${nextChapterMeta.slug}`}
+                    className="text-sm px-4 py-2 rounded-lg border transition-colors"
+                    style={{ color: theme.text, borderColor: theme.text + '33' }}>
+                    다음 챕터 →
+                  </Link>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="reader-content" style={fontStyle}>
+              {renderSentencesFor(sentences)}
+            </div>
+          )}
+
+          {sentences.length > 0 && (
+            <div className="flex justify-between mt-16 pt-8" style={{ borderTop: `1px solid ${theme.text}18` }}>
+              {prevChapter
+                ? <Link href={`/books/${book.slug}/${prevChapter.slug}`} className="text-sm opacity-50 hover:opacity-90 transition-opacity" style={{ color: theme.text }}>← {prevChapter.title}</Link>
+                : <div />}
+              {nextChapterMeta
+                ? <Link href={`/books/${book.slug}/${nextChapterMeta.slug}`} className="text-sm opacity-50 hover:opacity-90 transition-opacity" style={{ color: theme.text }}>{nextChapterMeta.title} →</Link>
+                : <div />}
+            </div>
+          )}
         </main>
       )}
 

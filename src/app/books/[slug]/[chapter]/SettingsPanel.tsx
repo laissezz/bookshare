@@ -61,7 +61,7 @@ export default function SettingsPanel({ settings, onChange, onClose }: Props) {
   const panel = (
     <div
       ref={ref}
-      className="fixed top-12 right-4 rounded-2xl shadow-xl w-80 p-4"
+      className="fixed top-14 right-4 rounded-2xl shadow-xl w-80 p-4"
       style={{ zIndex: 9999, background: panelBg, border: `1px solid ${panelBorder}` }}
     >
       {/* 테마 */}

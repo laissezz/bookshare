@@ -22,6 +22,7 @@ export default function SearchModal({ bookId, bookSlug, onClose }: Props) {
   const [results, setResults] = useState<Result[]>([])
   const [loading, setLoading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const isComposing = useRef(false) // 한글 IME 조합 중 여부
   const router = useRouter()
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export default function SearchModal({ bookId, bookSlug, onClose }: Props) {
   }, [onClose])
 
   useEffect(() => {
-    if (!query.trim()) { setResults([]); return }
+    if (!query.trim() || isComposing.current) { setResults([]); return }
     const timer = setTimeout(async () => {
       setLoading(true)
       try {
@@ -83,6 +84,11 @@ export default function SearchModal({ bookId, bookSlug, onClose }: Props) {
             ref={inputRef}
             value={query}
             onChange={e => setQuery(e.target.value)}
+            onCompositionStart={() => { isComposing.current = true }}
+            onCompositionEnd={e => {
+              isComposing.current = false
+              setQuery((e.target as HTMLInputElement).value)
+            }}
             placeholder="책 안에서 검색..."
             className="flex-1 text-sm outline-none text-gray-900 placeholder-gray-400"
           />
