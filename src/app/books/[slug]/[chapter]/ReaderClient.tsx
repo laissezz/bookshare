@@ -598,7 +598,7 @@ export default function ReaderClient({
         </div>
       ) : (
         /* ── 스크롤 뷰: URL 기반 챕터별 이동 ── */
-        <main className="mx-auto px-6 py-10" style={{ maxWidth: WIDTH_MAP[settings.contentWidth] }}>
+        <main className="mx-auto px-6 pt-16 pb-10" style={{ maxWidth: WIDTH_MAP[settings.contentWidth] }}>
           {renderChapterTitle(chapter, theme.text)}
 
           {sentences.length === 0 ? (
