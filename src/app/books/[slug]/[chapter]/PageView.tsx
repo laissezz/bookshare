@@ -14,6 +14,10 @@ interface Props {
   totalChapters: number
   onNextChapter?: () => void
   hasNextChapter?: boolean
+  /** 이어읽기용: 외부에서 특정 문장으로 점프할 수 있도록 함수를 이 ref에 할당 */
+  goToSentenceRef?: React.MutableRefObject<((sentenceId: string) => void) | null>
+  /** 페이지 넘김 시 호출 (이어읽기 토스트 자동 닫기용) */
+  onPageTurn?: () => void
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -50,6 +54,7 @@ export default function PageView({
   children, contentKey, spread, bgColor,
   chapterIndex, totalChapters,
   onNextChapter, hasNextChapter,
+  goToSentenceRef, onPageTurn,
 }: Props) {
   const outerRef   = useRef<HTMLDivElement>(null) // 표시 영역 (overflow:hidden)
   const contentRef = useRef<HTMLDivElement>(null) // 실제 콘텐츠 (측정 + 표시 겸용)
@@ -126,6 +131,27 @@ export default function PageView({
     }
   }, [contentKey, pageHeight, spread])
 
+  // ── 이어읽기 점프 함수를 외부 ref에 할당 ─────────────────────────────────────
+  // measured=true 이후, pageOffsets가 갱신될 때마다 최신 함수로 교체
+  useEffect(() => {
+    if (!goToSentenceRef) return
+    goToSentenceRef.current = (sentenceId: string) => {
+      if (!contentRef.current || pageOffsets.length === 0) return
+      const el = contentRef.current.querySelector(`[data-sentence-id="${sentenceId}"]`) as HTMLElement | null
+      if (!el) return
+      const containerTop = contentRef.current.getBoundingClientRect().top
+      const elTop = el.getBoundingClientRect().top - containerTop
+      // elTop이 속한 페이지 찾기 (pageOffsets[i] <= elTop 인 마지막 i)
+      let targetPage = 0
+      for (let i = pageOffsets.length - 1; i >= 0; i--) {
+        if (pageOffsets[i] <= elTop + 4) { targetPage = i; break }
+      }
+      // spread=2 이면 짝수 페이지로 맞춤 (스프레드 단위 이동)
+      if (spread === 2 && targetPage % 2 !== 0) targetPage -= 1
+      setCurrentPage(targetPage)
+    }
+  }, [measured, pageOffsets, spread, goToSentenceRef])
+
   // ── 프리로드: 마지막 5페이지 이내 or 페이지 수가 적으면 즉시 ────────────────
   useEffect(() => {
     if (!hasNextChapter) return
@@ -138,17 +164,23 @@ export default function PageView({
   // ── 이동 ─────────────────────────────────────────────────────────────────
   const goNext = useCallback(() => {
     setCurrentPage(p => {
-      if (spread === 2) return currentSpread + 1 < totalSpreads ? p + 2 : p
-      return p + 1 < totalPages ? p + 1 : p
+      const next = spread === 2
+        ? (currentSpread + 1 < totalSpreads ? p + 2 : p)
+        : (p + 1 < totalPages ? p + 1 : p)
+      if (next !== p) onPageTurn?.()
+      return next
     })
-  }, [spread, currentSpread, totalSpreads, totalPages])
+  }, [spread, currentSpread, totalSpreads, totalPages, onPageTurn])
 
   const goPrev = useCallback(() => {
     setCurrentPage(p => {
-      if (spread === 2) return currentSpread > 0 ? p - 2 : p
-      return p > 0 ? p - 1 : p
+      const next = spread === 2
+        ? (currentSpread > 0 ? p - 2 : p)
+        : (p > 0 ? p - 1 : p)
+      if (next !== p) onPageTurn?.()
+      return next
     })
-  }, [spread, currentSpread])
+  }, [spread, currentSpread, onPageTurn])
 
   // ── 키보드 ───────────────────────────────────────────────────────────────
   useEffect(() => {

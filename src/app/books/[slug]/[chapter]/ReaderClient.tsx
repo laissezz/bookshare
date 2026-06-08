@@ -113,6 +113,8 @@ export default function ReaderClient({
   const [pendingSentenceId, setPendingSentenceId] = useState<string | null>(null)
   const [settings, setSettings] = useState<ReaderSettings>(loadSettings)
   const resumeSentenceId = useRef<string | null>(null)
+  // 페이지 뷰: PageView가 이 ref에 "sentenceId → 해당 페이지로 이동" 함수를 할당
+  const pageGoToRef = useRef<((sentenceId: string) => void) | null>(null)
   // 스크롤 중 실수 터치 방지: pointerdown 좌표를 기억해두고 이동 거리가 8px 이상이면 클릭 무시
   const pointerDownPos = useRef<{ x: number; y: number } | null>(null)
 
@@ -213,10 +215,31 @@ export default function ReaderClient({
   }, [book.slug, chapter.slug])
 
   function scrollToSentence(sentenceId: string) {
-    document.querySelector(`[data-sentence-id="${sentenceId}"]`)
-      ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if (settings.viewMode === 'page') {
+      // 페이지 뷰 모드: PageView가 할당한 함수로 해당 페이지로 이동
+      if (pageGoToRef.current) {
+        pageGoToRef.current(sentenceId)
+      }
+    } else {
+      // 스크롤 뷰 모드: scrollIntoView
+      document.querySelector(`[data-sentence-id="${sentenceId}"]`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
     setResumeToast(false)
   }
+
+  // 스크롤 뷰 모드: 토스트 표시 중 스크롤하면 자동 닫기
+  useEffect(() => {
+    if (!resumeToast || settings.viewMode === 'page') return
+    const startY = window.scrollY
+    const handleScroll = () => {
+      if (Math.abs(window.scrollY - startY) > 80) {
+        setResumeToast(false)
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [resumeToast, settings.viewMode])
 
   // 다음 챕터를 동적으로 이어 붙이기 (페이지 뷰 전용)
   const loadNextChapter = useCallback(async () => {
@@ -613,6 +636,8 @@ export default function ReaderClient({
             totalChapters={allChapters.length}
             onNextChapter={loadNextChapter}
             hasNextChapter={lastLoadedOrderRef.current < (allChapters[allChapters.length - 1]?.order_index ?? 0)}
+            goToSentenceRef={pageGoToRef}
+            onPageTurn={() => setResumeToast(false)}
           >
             <div className="reader-content px-10" style={fontStyle}>
               {renderAllContent(theme.text)}
