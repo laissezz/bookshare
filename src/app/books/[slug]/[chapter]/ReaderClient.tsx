@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -428,6 +428,14 @@ export default function ReaderClient({
 
   const isPageMode = settings.viewMode === 'page'
 
+  // contentKey: 레이아웃(페이지 분할)에 실제 영향을 주는 값만 포함
+  // highlight, popup, tocOpen 등 레이아웃과 무관한 상태 변화는 제외
+  // → calcPageOffsets가 꼭 필요할 때만 실행
+  const contentKey = useMemo(() =>
+    loadedChapters.map(lc => lc.chapter.id).join(',')
+    + `|${settings.fontSize}|${settings.lineHeight}|${settings.letterSpacing}|${settings.fontFamily}|${settings.contentWidth}`,
+  [loadedChapters, settings.fontSize, settings.lineHeight, settings.letterSpacing, settings.fontFamily, settings.contentWidth])
+
   return (
     <div
       className="relative"
@@ -448,10 +456,16 @@ export default function ReaderClient({
           style={{ background: `rgba(0,0,0,${brightnessOverlay.toFixed(2)})` }} />
       )}
 
-      {/* 헤더 — 스크롤 뷰에서도 sticky로 상단 고정 */}
+      {/* 헤더
+          - 페이지 모드: flex 컨테이너의 첫 번째 shrink-0 자식 (position normal)
+          - 스크롤 모드: position fixed + top-0 (sticky보다 확실한 크로스브라우저 고정) */}
       <header
-        className="z-50 border-b px-3 h-14 flex items-center justify-between shrink-0 sticky top-0"
-        style={{ backgroundColor: theme.bg, borderColor: settings.theme === 'dark' ? '#333' : '#f0f0f0' }}
+        className="z-50 border-b px-3 h-14 flex items-center justify-between shrink-0"
+        style={{
+          backgroundColor: theme.bg,
+          borderColor: settings.theme === 'dark' ? '#333' : '#f0f0f0',
+          ...(isPageMode ? {} : { position: 'fixed', top: 0, left: 0, right: 0 }),
+        }}
       >
         {/* 왼쪽: 뒤로가기 */}
         <Link
@@ -592,6 +606,7 @@ export default function ReaderClient({
         /* ── 페이지 뷰: flex-1로 헤더 제외 나머지 영역 꽉 채움 ── */
         <div className="flex-1 min-h-0">
           <PageView
+            contentKey={contentKey}
             spread={settings.pageSpread}
             bgColor={theme.bg}
             chapterIndex={chapter.order_index}
@@ -606,8 +621,8 @@ export default function ReaderClient({
           </PageView>
         </div>
       ) : (
-        /* ── 스크롤 뷰: URL 기반 챕터별 이동 ── */
-        <main className="mx-auto px-6 pt-8 pb-10" style={{ maxWidth: WIDTH_MAP[settings.contentWidth] }}>
+        /* 스크롤 뷰: 헤더가 fixed(56px)이므로 paddingTop = 56 + 32(여백) = 88px */
+        <main className="mx-auto px-6 pb-10" style={{ maxWidth: WIDTH_MAP[settings.contentWidth], paddingTop: '88px' }}>
           {renderChapterTitle(chapter, theme.text)}
 
           {sentences.length === 0 ? (

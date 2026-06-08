@@ -4,6 +4,10 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 
 interface Props {
   children: React.ReactNode
+  // contentKey: 레이아웃에 영향을 주는 값만 포함 (챕터 ID 목록 + 폰트/크기 설정)
+  // highlight 토글, popup, tocOpen 등 레이아웃과 무관한 상태 변화는 제외
+  // → calcPageOffsets가 꼭 필요할 때만 실행되어 성능 문제 해결
+  contentKey: string
   spread: 1 | 2
   bgColor: string
   chapterIndex: number
@@ -47,7 +51,7 @@ function calcPageOffsets(container: HTMLElement, pageH: number): number[] {
 }
 
 export default function PageView({
-  children, spread, bgColor,
+  children, contentKey, spread, bgColor,
   chapterIndex, totalChapters,
   onNextChapter, hasNextChapter,
 }: Props) {
@@ -105,7 +109,7 @@ export default function PageView({
       return () => cancelAnimationFrame(id2)
     })
     return () => cancelAnimationFrame(id1)
-  }, [children, pageHeight, spread])
+  }, [contentKey, pageHeight, spread])
 
   // ── 프리로드: 마지막 5페이지 이내 or 페이지 수가 적으면 즉시 ────────────────
   useEffect(() => {
