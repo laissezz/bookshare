@@ -184,23 +184,32 @@ export default function ReaderClient({
     } catch {}
   }, [book.slug, chapter.slug])
 
+  // 읽기 진도 저장 — IntersectionObserver로 교체 (scroll 이벤트 + 전체 querySelectorAll + getBoundingClientRect 반복 호출이 CPU를 독점하는 문제 해결)
   useEffect(() => {
-    const handler = () => {
-      const els = document.querySelectorAll('[data-sentence-id]')
-      let lastVisible: string | null = null
-      for (const el of els) {
-        const rect = el.getBoundingClientRect()
-        if (rect.top < window.innerHeight * 0.6) lastVisible = el.getAttribute('data-sentence-id')
-      }
-      if (lastVisible) {
-        localStorage.setItem(
-          `reading_progress_${book.slug}`,
-          JSON.stringify({ chapterSlug: chapter.slug, sentenceId: lastVisible })
-        )
-      }
-    }
-    window.addEventListener('scroll', handler, { passive: true })
-    return () => window.removeEventListener('scroll', handler)
+    let lastSaved: string | null = null
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // viewport 60% 이상 올라간 요소 중 가장 마지막 것이 현재 읽는 위치
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const id = (entry.target as HTMLElement).dataset.sentenceId
+            if (id && id !== lastSaved) {
+              lastSaved = id
+              localStorage.setItem(
+                `reading_progress_${book.slug}`,
+                JSON.stringify({ chapterSlug: chapter.slug, sentenceId: id })
+              )
+            }
+          }
+        }
+      },
+      { rootMargin: '0px 0px -40% 0px', threshold: 0 }
+    )
+    // 약간의 지연 후 관찰 시작 (렌더 완료 후)
+    const timer = setTimeout(() => {
+      document.querySelectorAll('[data-sentence-id]').forEach(el => observer.observe(el))
+    }, 300)
+    return () => { clearTimeout(timer); observer.disconnect() }
   }, [book.slug, chapter.slug])
 
   function scrollToSentence(sentenceId: string) {
@@ -439,9 +448,9 @@ export default function ReaderClient({
           style={{ background: `rgba(0,0,0,${brightnessOverlay.toFixed(2)})` }} />
       )}
 
-      {/* 헤더 — z-50으로 토스트(z-40)보다 위에 위치 */}
+      {/* 헤더 — 스크롤 뷰에서도 sticky로 상단 고정 */}
       <header
-        className="z-50 border-b px-3 h-14 flex items-center justify-between shrink-0"
+        className="z-50 border-b px-3 h-14 flex items-center justify-between shrink-0 sticky top-0"
         style={{ backgroundColor: theme.bg, borderColor: settings.theme === 'dark' ? '#333' : '#f0f0f0' }}
       >
         {/* 왼쪽: 뒤로가기 */}
@@ -598,7 +607,7 @@ export default function ReaderClient({
         </div>
       ) : (
         /* ── 스크롤 뷰: URL 기반 챕터별 이동 ── */
-        <main className="mx-auto px-6 pt-16 pb-10" style={{ maxWidth: WIDTH_MAP[settings.contentWidth] }}>
+        <main className="mx-auto px-6 pt-8 pb-10" style={{ maxWidth: WIDTH_MAP[settings.contentWidth] }}>
           {renderChapterTitle(chapter, theme.text)}
 
           {sentences.length === 0 ? (
