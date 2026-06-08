@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getSessionId } from '@/lib/session'
 
@@ -111,12 +111,31 @@ export default function HighlightPopup({
     setSubmitting(false)
   }
 
-  // 팝업 위치 계산 — 마우스 바로 아래, 화면 밖으로 안 나가게
-  const top = Math.min(mouseY + 12, window.innerHeight - 60)
-  const left = Math.min(
-    Math.max(16, mouseX - 8),
-    window.innerWidth - 320 - 16
-  )
+  // 팝업 위치: 렌더 후 실제 높이를 측정해서 결정
+  // - 아래 공간이 부족하면 클릭 위치 위쪽에 표시 (flip)
+  // - showForm·comments 변경으로 팝업 크기가 바뀔 때도 재계산
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+
+  useLayoutEffect(() => {
+    if (!popupRef.current) return
+    const { width, height } = popupRef.current.getBoundingClientRect()
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    const MARGIN = 12
+
+    // 수평: 클릭 X 기준 좌우 균등, 뷰포트 안에 클램프
+    const left = Math.max(MARGIN, Math.min(mouseX - width / 2, vw - width - MARGIN))
+
+    // 수직: 기본은 클릭 아래, 공간 부족하면 위쪽으로 뒤집기
+    let top = mouseY + MARGIN
+    if (top + height > vh - MARGIN) {
+      top = mouseY - height - MARGIN
+    }
+    // 위쪽도 잘리면 상단 고정
+    top = Math.max(MARGIN, top)
+
+    setPos({ top, left })
+  }, [mouseX, mouseY, showForm, comments.length, submitted])
 
   return (
     <div
@@ -125,7 +144,12 @@ export default function HighlightPopup({
       aria-modal="true"
       aria-label="문장 공감 및 댓글"
       className="fixed z-30 bg-white border border-gray-200 rounded-2xl shadow-xl w-80 max-h-[70vh] overflow-y-auto"
-      style={{ top, left: Math.max(16, left) }}
+      style={{
+        top: pos?.top ?? 0,
+        left: pos?.left ?? 0,
+        // 위치 계산 전까지 숨겨서 잘못된 위치에 잠깐 보이는 현상 방지
+        visibility: pos ? 'visible' : 'hidden',
+      }}
     >
       <div className="p-4">
         {/* 문장 미리보기 */}
