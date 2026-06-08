@@ -85,9 +85,20 @@ export default function AuthModal({ onSuccess, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 relative"
         onClick={e => e.stopPropagation()}
       >
+        {/* 닫기 버튼 */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+          aria-label="닫기"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
+
         {step === 'nickname' ? (
           <>
             <div className="text-2xl mb-2">🖊️</div>

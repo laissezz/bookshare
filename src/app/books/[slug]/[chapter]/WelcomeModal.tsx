@@ -10,7 +10,11 @@ export default function WelcomeModal() {
 
   useEffect(() => {
     const shown = localStorage.getItem(STORAGE_KEY)
-    if (!shown) setOpen(true)
+    if (!shown) {
+      // 열리는 즉시 기록 — 뒤로가기 등으로 닫아도 다음 방문 시 재표시 안 됨
+      localStorage.setItem(STORAGE_KEY, '1')
+      setOpen(true)
+    }
   }, [])
 
   function close() {

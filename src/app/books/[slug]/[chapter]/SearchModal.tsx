@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 
 interface Result {
   id: string
@@ -24,7 +23,6 @@ export default function SearchModal({ bookId, bookSlug, onClose }: Props) {
   const [loading, setLoading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -39,29 +37,17 @@ export default function SearchModal({ bookId, bookSlug, onClose }: Props) {
     if (!query.trim()) { setResults([]); return }
     const timer = setTimeout(async () => {
       setLoading(true)
-      const { data: sentences } = await supabase
-        .from('sentences')
-        .select('id, content, chapter_id')
-        .eq('book_id', bookId)
-        .ilike('content', `%${query}%`)
-        .limit(20)
-
-      if (!sentences?.length) { setResults([]); setLoading(false); return }
-
-      const chapterIds = [...new Set(sentences.map(s => s.chapter_id))]
-      const { data: chapters } = await supabase
-        .from('chapters')
-        .select('id, slug, title')
-        .in('id', chapterIds)
-
-      const chapterMap = Object.fromEntries((chapters ?? []).map(c => [c.id, c]))
-
-      setResults(sentences.map(s => ({
-        ...s,
-        chapterSlug: chapterMap[s.chapter_id]?.slug ?? '',
-        chapterTitle: chapterMap[s.chapter_id]?.title ?? '',
-      })))
-      setLoading(false)
+      try {
+        const res = await fetch(
+          `/api/books/search?bookId=${encodeURIComponent(bookId)}&q=${encodeURIComponent(query.trim())}`
+        )
+        const data = await res.json()
+        setResults(data.results ?? [])
+      } catch {
+        setResults([])
+      } finally {
+        setLoading(false)
+      }
     }, 300)
     return () => clearTimeout(timer)
   }, [query, bookId])
@@ -90,7 +76,9 @@ export default function SearchModal({ bookId, bookSlug, onClose }: Props) {
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-          <span className="text-gray-400">🔍</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 shrink-0">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
           <input
             ref={inputRef}
             value={query}
@@ -98,7 +86,7 @@ export default function SearchModal({ bookId, bookSlug, onClose }: Props) {
             placeholder="책 안에서 검색..."
             className="flex-1 text-sm outline-none text-gray-900 placeholder-gray-400"
           />
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
         </div>
 
         <div className="max-h-96 overflow-y-auto">

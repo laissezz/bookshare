@@ -27,6 +27,7 @@ interface Chapter {
   title: string
   order_index: number
   level?: number
+  char_count?: number
 }
 
 interface Book {
@@ -112,6 +113,8 @@ export default function ReaderClient({
   const [pendingSentenceId, setPendingSentenceId] = useState<string | null>(null)
   const [settings, setSettings] = useState<ReaderSettings>(loadSettings)
   const resumeSentenceId = useRef<string | null>(null)
+  // 스크롤 중 실수 터치 방지: pointerdown 좌표를 기억해두고 이동 거리가 8px 이상이면 클릭 무시
+  const pointerDownPos = useRef<{ x: number; y: number } | null>(null)
 
   // 페이지 뷰 전용: 이어서 로드된 챕터 목록
   const [loadedChapters, setLoadedChapters] = useState<LoadedChapter[]>([
@@ -270,6 +273,12 @@ export default function ReaderClient({
   }, [settings.viewMode]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSentenceClick = useCallback((sentence: Sentence, e: React.MouseEvent) => {
+    // 스크롤 중 실수 터치 방지: pointerdown에서 8px 이상 이동했으면 무시
+    if (pointerDownPos.current) {
+      const dx = Math.abs(e.clientX - pointerDownPos.current.x)
+      const dy = Math.abs(e.clientY - pointerDownPos.current.y)
+      if (dx > 8 || dy > 8) return
+    }
     // 로그인 안 된 경우 → 가입 모달
     if (!reader) {
       setPendingSentenceId(sentence.id)
@@ -339,6 +348,7 @@ export default function ReaderClient({
                 role="button"
                 tabIndex={0}
                 aria-pressed={isHighlighted}
+                onPointerDown={e => { pointerDownPos.current = { x: e.clientX, y: e.clientY } }}
                 onClick={e => handleSentenceClick(sentence, e)}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') toggleHighlight(sentence.id)
@@ -391,8 +401,10 @@ export default function ReaderClient({
     ))
   }
 
-  const prevChapter = allChapters.find(c => c.order_index === chapter.order_index - 1)
-  const nextChapterMeta = allChapters.find(c => c.order_index === chapter.order_index + 1)
+  // 빈 챕터(char_count < 300)는 prev/next 네비게이션에서 제외
+  const navChapters = allChapters.filter(c => (c.char_count ?? 0) >= 300)
+  const prevChapter = navChapters.filter(c => c.order_index < chapter.order_index).at(-1)
+  const nextChapterMeta = navChapters.find(c => c.order_index > chapter.order_index)
   const theme = THEMES[settings.theme]
   const brightnessOverlay = 1 - settings.brightness / 100
   const fontStyle = {
@@ -427,9 +439,9 @@ export default function ReaderClient({
           style={{ background: `rgba(0,0,0,${brightnessOverlay.toFixed(2)})` }} />
       )}
 
-      {/* 헤더 */}
+      {/* 헤더 — z-50으로 토스트(z-40)보다 위에 위치 */}
       <header
-        className="z-10 border-b px-3 h-12 flex items-center justify-between shrink-0"
+        className="z-50 border-b px-3 h-12 flex items-center justify-between shrink-0"
         style={{ backgroundColor: theme.bg, borderColor: settings.theme === 'dark' ? '#333' : '#f0f0f0' }}
       >
         {/* 왼쪽: 뒤로가기 */}
@@ -520,17 +532,20 @@ export default function ReaderClient({
             </svg>
           </button>
 
-          {/* 설정 */}
+          {/* 설정 — 슬라이더 아이콘으로 직관적으로 표현 */}
           <button
             onClick={() => setSettingsOpen(v => !v)}
             className="flex items-center justify-center w-8 h-8 rounded-lg transition-opacity opacity-40 hover:opacity-80"
             style={{ color: theme.text }}
-            aria-label="읽기 설정"
+            aria-label="글자·테마 설정"
           >
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-              <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+              <line x1="4" y1="6" x2="20" y2="6"/>
+              <line x1="4" y1="12" x2="20" y2="12"/>
+              <line x1="4" y1="18" x2="20" y2="18"/>
+              <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/>
+              <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/>
+              <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
             </svg>
           </button>
 
